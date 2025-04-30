@@ -1,0 +1,36 @@
+{
+  "name": "prueba",
+  "version": "1.0.0",
+  "description": "proyecto de prueba 1",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcolindresr/repoprueba.git"
+  },
+  "author": "Miguel C",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mcolindresr/repoprueba/issues"
+  },
+  "homepage": "https://github.com/mcolindresr/repoprueba#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "bootstrap-icons": "^1.11.3",
+    "cookie-parser": "^1.4.7",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "ejs": "^3.1.10",
+    "env": "^0.0.2",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mssql": "^11.0.1",
+    "nodemailer": "^6.10.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

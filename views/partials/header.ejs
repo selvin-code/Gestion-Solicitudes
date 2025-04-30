@@ -1,0 +1,33 @@
+<header>
+    <nav class="navbar navbar-expand-lg navbar-institucional">
+      <div class="container">
+        <div class="d-flex align-items-center">
+          <img src="/images/logo-consucoop.png" alt="CONSUCOOP Logo" class="logo-header">
+          <a class="navbar-brand" href="/" aria-label="Sistema de Gestión de Solicitudes">
+            <div class="navbar-brand-text">
+              <span>Sistema de Gestión de Solicitudes</span>
+            </div>
+          </a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/aprobacion" data-bs-toggle="tooltip" title="Aprobación de solicitudes por jefe"><i class="bi bi-person-gear me-1"></i>Aprobación Jefe</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/aprobacion-RH" data-bs-toggle="tooltip" title="Gestión de solicitudes por RRHH"><i class="bi bi-people-fill me-1"></i>RRHH</a>
+            </li>
+            <li class="nav-item d-flex align-items-center ms-2">
+              <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <span class="text-white d-none d-md-inline" aria-label="Usuario actual"><%= usuario %></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>

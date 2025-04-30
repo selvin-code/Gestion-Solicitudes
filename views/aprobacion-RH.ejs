@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Aprobación RRHH - CONSUCOOP</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <link rel="stylesheet" href="css/styles.css">
+       
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-institucional">
+            <div class="container">
+                <div class="d-flex align-items-center">
+                    <img src="/images/logo-consucoop.png" alt="CONSUCOOP" class="logo-header">
+                    <a class="navbar-brand" href="/">
+                        <div class="navbar-brand-text">
+                            <span>CONSUCOOP</span>
+                            <small>Recursos Humanos</small>
+                        </div>
+                    </a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/aprobacion"><i class="bi bi-person-gear me-1"></i>Aprobación Jefe</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/"><i class="bi bi-house-door me-1"></i>Inicio</a>
+                        </li>
+                        <li class="nav-item d-flex align-items-center ms-2">
+                            <span class="text-white me-2 d-flex align-items-center">
+                                <i class="bi bi-person-circle me-2"></i>
+                                <span class="d-none d-md-inline"><%= usuario %></span>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container my-5">
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h1 class="h3 mb-1">
+                            <i class="bi bi-people-fill me-2"></i>Aprobación RRHH
+                        </h1>
+                        <p class="mb-0">Gestión de solicitudes pendientes de aprobación</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas Rápidas -->
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <i class="bi bi-hourglass"></i>
+                    <h3><%= solicitudes ? solicitudes.filter(s => (s.estado || '').toLowerCase().trim() === 'aprobado por jefe').length : 0 %></h3>
+                    <p>Pendientes</p>
+                </div>
+                <div class="stat-card">
+                    <i class="bi bi-check-circle"></i>
+                    <h3><%= historico ? historico.filter(s => (s.estado || '').toLowerCase().trim() === 'aprobado').length : 0 %></h3>
+                    <p>Aprobadas</p>
+                </div>
+                <div class="stat-card">
+                    <i class="bi bi-x-circle"></i>
+                    <h3><%= historico ? historico.filter(s => (s.estado || '').toLowerCase().trim() === 'rechazado').length : 0 %></h3>
+                    <p>Rechazadas</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center p-0">
+                    <ul class="nav nav-tabs" id="aprobacionRHTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="pendientes-tab" data-bs-toggle="tab" data-bs-target="#pendientes" type="button" role="tab">
+                                <i class="bi bi-hourglass me-1"></i>Pendientes
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="historico-tab" data-bs-toggle="tab" data-bs-target="#historico" type="button" role="tab">
+                                <i class="bi bi-archive me-1"></i>Histórico
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="reportes-tab" data-bs-toggle="tab" data-bs-target="#reportes" type="button" role="tab">
+                                <i class="bi bi-bar-chart me-1"></i>Reportes
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center pe-3">
+                        <div class="tab-export-btn active" id="pendientes-export">
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-sm btn-outline-institucional"><i class="bi bi-filter me-1"></i>Filtrar</button>
+                                <a href="/export-aprobacion-RH" class="btn btn-sm btn-outline-institucional">
+                                    <i class="bi bi-download me-1"></i>Exportar
+                                </a>
+                            </div>
+                        </div>
+                        <div class="tab-export-btn" id="historico-export">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-institucional dropdown-toggle" type="button" id="exportHistoricoDropdown" data-bs-toggle="dropdown">
+                                    <i class="bi bi-download me-1"></i>Exportar
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="/export-aprobacion-RH-historico?estado=Todas">Todas</a></li>
+                                    <li><a class="dropdown-item" href="/export-aprobacion-RH-historico?estado=Aceptadas">Aceptadas</a></li>
+                                    <li><a class="dropdown-item" href="/export-aprobacion-RH-historico?estado=Rechazadas">Rechazadas</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="tab-export-btn" id="reportes-export">
+                            <button class="btn btn-sm btn-outline-institucional" id="export-report-btn">
+                                <i class="bi bi-download me-1"></i>Exportar Reporte
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="aprobacionRHTabContent">
+                    <div class="tab-pane fade show active" id="pendientes" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Solicitante</th>
+                                        <th>Periodo</th>
+                                        <th>Días</th>
+                                        <th>Estado</th>
+                                        <th>Observaciones</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (solicitudes && solicitudes.length > 0) { %>
+                                        <% solicitudes.forEach(solicitud => { %>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                            <i class="bi bi-person-fill"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1 ms-3">
+                                                            <div class="fw-medium"><%= solicitud.nombre %></div>
+                                                            <div class="text-muted small">Área: <%= solicitud.area_solicitante %></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-nowrap"><%= solicitud.fecha_inicio.toISOString().split('T')[0] %> - <%= solicitud.fecha_fin.toISOString().split('T')[0] %></div>
+                                                    <div class="text-muted small">Solicitado: <%= solicitud.fecha_solicitud.toISOString().split('T')[0] %></div>
+                                                </td>
+                                                <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= solicitud.total_dias %> días</span></td>
+                                                <td><span class="badge bg-info"><%= solicitud.estado %></span></td>
+                                                <td>
+                                                    <% if (solicitud.observaciones) { %>
+                                                        <span class="d-inline-block text-truncate" style="max-width: 150px;" title="<%= solicitud.observaciones %>">
+                                                            <%= solicitud.observaciones %>
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="text-muted">-</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-end">
+                                                    <button class="btn btn-sm btn-success aprobar-btn" data-id="<%= solicitud.id %>" title="Aprobar">
+                                                        <i class="bi bi-check2"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-danger ms-2 rechazar-btn" data-id="<%= solicitud.id %>" data-bs-toggle="modal" data-bs-target="#rechazoModal" title="Rechazar">
+                                                        <i class="bi bi-x"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary ms-2 detalles-btn" data-id="<%= solicitud.id %>" data-bs-toggle="modal" data-bs-target="#detallesModal" title="Detalles">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center empty-message">
+                                                <i class="bi bi-inbox fs-1"></i>
+                                                <p class="mt-2">No hay solicitudes pendientes de RRHH</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="historico" role="tabpanel">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Solicitante</th>
+                                        <th>Periodo</th>
+                                        <th>Días</th>
+                                        <th>Estado</th>
+                                        <th>Observaciones</th>
+                                        <th class="text-end">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (historico && historico.length > 0) { %>
+                                        <% historico.forEach(solicitud => { %>
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="flex-shrink-0 bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                                            <i class="bi bi-person-fill"></i>
+                                                        </div>
+                                                        <div class="flex-grow-1 ms-3">
+                                                            <div class="fw-medium"><%= solicitud.nombre %></div>
+                                                            <div class="text-muted small">Área: <%= solicitud.area_solicitante %></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-nowrap"><%= solicitud.fecha_inicio.toISOString().split('T')[0] %> - <%= solicitud.fecha_fin.toISOString().split('T')[0] %></div>
+                                                    <div class="text-muted small">Solicitado: <%= solicitud.fecha_solicitud.toISOString().split('T')[0] %></div>
+                                                </td>
+                                                <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= solicitud.total_dias %> días</span></td>
+                                                <td>
+                                                    <span class="badge <%= solicitud.estado === 'Aprobado' ? 'bg-success' : 'bg-danger' %>">
+                                                        <%= solicitud.estado %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <% if (solicitud.observaciones || solicitud.observaciones_rechazo) { %>
+                                                        <span class="d-inline-block text-truncate" style="max-width: 150px;" title="<%= solicitud.observaciones || solicitud.observaciones_rechazo %>">
+                                                            <%= solicitud.observaciones || solicitud.observaciones_rechazo %>
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="text-muted">-</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-end">
+                                                    <button class="btn btn-sm btn-outline-primary detalles-btn" data-id="<%= solicitud.id %>" data-bs-toggle="modal" data-bs-target="#detallesModal" title="Detalles">
+                                                        <i class="bi bi-eye-fill"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center empty-message">
+                                                <i class="bi bi-archive fs-1"></i>
+                                                <p class="mt-2">No hay solicitudes en el histórico</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="reportes" role="tabpanel">
+                        <div class="filter-section">
+                            <h5><i class="bi bi-filter me-2"></i>Filtros de Reporte</h5>
+                            <form id="reporteForm" class="row g-3">
+                                <div class="col-md-3">
+                                    <label for="fechaInicio" class="form-label">Fecha Inicio</label>
+                                    <input type="date" class="form-control" id="fechaInicio">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="fechaFin" class="form-label">Fecha Fin</label>
+                                    <input type="date" class="form-control" id="fechaFin">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="areas" class="form-label">Áreas</label>
+                                    <select class="form-select" id="areas" multiple>
+                                        <% availableAreas.forEach(area => { %>
+                                            <option value="<%= area %>"><%= area %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="estados" class="form-label">Estados</label>
+                                    <select class="form-select" id="estados" multiple>
+                                        <option value="Aprobado por Jefe">Aprobado por Jefe</option>
+                                        <option value="Aprobado">Aprobado</option>
+                                        <option value="Rechazado">Rechazado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-12 text-end">
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Generar Reporte</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="quick-stats">
+                            <div class="stat-card">
+                                <i class="bi bi-file-earmark-text"></i>
+                                <h3 id="totalSolicitudes">0</h3>
+                                <p>Total Solicitudes</p>
+                            </div>
+                            <div class="stat-card">
+                                <i class="bi bi-calendar-day"></i>
+                                <h3 id="totalDias">0</h3>
+                                <p>Total Días</p>
+                            </div>
+                            <div class="stat-card">
+                                <i class="bi bi-clock"></i>
+                                <h3 id="promedioDias">0</h3>
+                                <p>Promedio Días</p>
+                            </div>
+                            <div class="stat-card">
+                                <i class="bi bi-check-circle"></i>
+                                <h3 id="tasaAprobacion">0%</h3>
+                                <p>Tasa Aprobación</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="chart-container">
+                                    <h6>Solicitudes por Estado y Área</h6>
+                                    <canvas id="barChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="chart-container">
+                                    <h6>Solicitudes por Mes</h6>
+                                    <canvas id="lineChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="chart-container">
+                                    <h6>Días Solicitados por Área</h6>
+                                    <canvas id="donutChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Detalles -->
+            <div class="modal fade" id="detallesModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title"><i class="bi bi-info-circle me-2"></i>Detalles de la Solicitud</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm mb-4">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary mb-3">
+                                                <i class="bi bi-person-lines-fill me-2"></i>Información del Solicitante
+                                            </h6>
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4 fw-medium">Solicitante:</dt>
+                                                <dd class="col-sm-8" id="detalleNombre">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Área:</dt>
+                                                <dd class="col-sm-8" id="detalleDepartamento">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Fecha Solicitud:</dt>
+                                                <dd class="col-sm-8" id="detalleFechaSolicitud">-</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-primary mb-3">
+                                                <i class="bi bi-calendar-range me-2"></i>Detalles de la Solicitud
+                                            </h6>
+                                            <dl class="row mb-0">
+                                                <dt class="col-sm-4 fw-medium">Periodo:</dt>
+                                                <dd class="col-sm-8" id="detallePeriodo">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Días solicitados:</dt>
+                                                <dd class="col-sm-8" id="detalleDias">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Estado:</dt>
+                                                <dd class="col-sm-8" id="detalleEstado">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Observaciones:</dt>
+                                                <dd class="col-sm-8" id="detalleObservaciones">-</dd>
+                                                <dt class="col-sm-4 fw-medium">Obs. Rechazo:</dt>
+                                                <dd class="col-sm-8" id="detalleObservacionesRechazo">-</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-lg me-1"></i>Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Rechazo -->
+            <div class="modal fade" id="rechazoModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger">
+                            <h5 class="modal-title"><i class="bi bi-x-circle me-2"></i>Rechazar Solicitud</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="rechazoForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-medium">Observaciones</label>
+                                    <textarea class="form-control" id="observacionesRechazo" rows="3" placeholder="Motivo (opcional)"></textarea>
+                                </div>
+                                <input type="hidden" id="rechazoId">
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger" form="rechazoForm">Confirmar Rechazo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            // Datos de solicitudes
+            const solicitudes = <%- JSON.stringify(solicitudes || []) %>;
+            const historico = <%- JSON.stringify(historico || []) %>;
+            const availableAreas = <%- JSON.stringify(availableAreas || []) %>;
+
+            // Depuración: Verificar datos
+            console.log('Solicitudes en aprobacion-RH.ejs:', solicitudes);
+            console.log('Estados únicos en solicitudes:', [...new Set(solicitudes.map(s => s.estado))]);
+            console.log('Histórico en aprobacion-RH.ejs:', historico);
+            console.log('Estados únicos en histórico:', [...new Set(historico.map(s => s.estado))]);
+            console.log('Áreas disponibles:', availableAreas);
+
+            // Inicialización de gráficos
+            let barChart, lineChart, donutChart;
+
+            document.addEventListener('DOMContentLoaded', function() {
+                configurarCambioPestanas();
+                configurarAprobacion();
+                configurarRechazo();
+                configurarModalDetalles();
+                configurarReportes();
+            });
+
+            function configurarCambioPestanas() {
+                document.querySelectorAll('[data-bs-toggle="tab"]').forEach(button => {
+                    button.addEventListener('shown.bs.tab', event => {
+                        const target = event.target.getAttribute('data-bs-target');
+                        document.querySelectorAll('.tab-export-btn').forEach(btn => btn.classList.remove('active'));
+                        document.getElementById(`${target.slice(1)}-export`).classList.add('active');
+                    });
+                });
+            }
+
+            function configurarAprobacion() {
+                document.querySelectorAll('.aprobar-btn').forEach(button => {
+                    button.addEventListener('click', async function() {
+                        const id = this.getAttribute('data-id');
+                        try {
+                            const response = await fetch('/aprobacion-RH', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ id, accion: 'aprobar' })
+                            });
+                            const result = await response.json();
+                            if (result.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '¡Aprobado por RRHH!',
+                                    text: result.message,
+                                    confirmButtonColor: '#4975a2',
+                                    showConfirmButton: false,
+                                    timer: 2000,
+                                    timerProgressBar: true,
+                                    didClose: () => location.reload()
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: result.error,
+                                    confirmButtonColor: '#4975a2'
+                                });
+                            }
+                        } catch (error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'No se pudo aprobar: ' + error.message,
+                                confirmButtonColor: '#4975a2'
+                            });
+                        }
+                    });
+                });
+            }
+
+            function configurarRechazo() {
+                document.querySelectorAll('.rechazar-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        document.getElementById('rechazoId').value = this.getAttribute('data-id');
+                    });
+                });
+                document.getElementById('rechazoForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const id = document.getElementById('rechazoId').value;
+                    const observacionesRechazo = document.getElementById('observacionesRechazo').value;
+                    try {
+                        const response = await fetch('/aprobacion-RH', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, accion: 'rechazar', observaciones_rechazo: observacionesRechazo })
+                        });
+                        const result = await response.json();
+                        if (result.success) {
+                            const rechazoModal = bootstrap.Modal.getInstance(document.getElementById('rechazoModal'));
+                            Swal.fire({
+                                icon: 'warning',
+                                title: '¡Rechazado por RRHH!',
+                                text: result.message,
+                                confirmButtonColor: '#4975a2',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                                didClose: () => {
+                                    rechazoModal.hide();
+                                    location.reload();
+                                }
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: result.error,
+                                confirmButtonColor: '#4975a2'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo rechazar: ' + error.message,
+                            confirmButtonColor: '#4975a2'
+                        });
+                    }
+                });
+            }
+
+            function configurarModalDetalles() {
+                document.querySelectorAll('.detalles-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const row = this.closest('tr');
+                        const datos = {
+                            nombre: row.querySelector('.fw-medium').textContent,
+                            departamento: row.querySelector('.text-muted.small').textContent.replace('Área: ', ''),
+                            periodo: row.querySelector('td:nth-child(2) > .text-nowrap').textContent,
+                            fechaSolicitud: row.querySelector('td:nth-child(2) > .small').textContent.replace('Solicitado: ', ''),
+                            dias: row.querySelector('td:nth-child(3)').textContent,
+                            estado: row.querySelector('.badge').textContent,
+                            observaciones: row.cells[4].textContent
+                        };
+                        document.getElementById('detalleNombre').textContent = datos.nombre;
+                        document.getElementById('detalleDepartamento').textContent = datos.departamento;
+                        document.getElementById('detalleFechaSolicitud').textContent = datos.fechaSolicitud;
+                        document.getElementById('detallePeriodo').textContent = datos.periodo;
+                        document.getElementById('detalleDias').textContent = datos.dias;
+                        document.getElementById('detalleEstado').textContent = datos.estado;
+                        document.getElementById('detalleObservaciones').textContent = datos.observaciones;
+                        document.getElementById('detalleObservacionesRechazo').textContent = '-';
+                    });
+                });
+            }
+
+            function configurarReportes() {
+                const reporteForm = document.getElementById('reporteForm');
+                reporteForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const fechaInicio = document.getElementById('fechaInicio').value;
+                    const fechaFin = document.getElementById('fechaFin').value;
+                    const areas = Array.from(document.getElementById('areas').selectedOptions).map(opt => opt.value).join(',');
+                    const estados = Array.from(document.getElementById('estados').selectedOptions).map(opt => opt.value).join(',');
+
+                    try {
+                        const response = await fetch(`/reporte-RH?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&areas=${areas}&estados=${estados}`);
+                        const data = await response.json();
+                        if (data.success) {
+                            actualizarEstadisticas(data.stats);
+                            actualizarGraficos(data);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.error,
+                                confirmButtonColor: '#4975a2'
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'No se pudo generar el reporte: ' + error.message,
+                            confirmButtonColor: '#4975a2'
+                        });
+                    }
+                });
+
+                // Configurar exportación de reporte
+                document.getElementById('export-report-btn').addEventListener('click', function() {
+                    const fechaInicio = document.getElementById('fechaInicio').value;
+                    const fechaFin = document.getElementById('fechaFin').value;
+                    const areas = Array.from(document.getElementById('areas').selectedOptions).map(opt => opt.value).join(',');
+                    const estados = Array.from(document.getElementById('estados').selectedOptions).map(opt => opt.value).join(',');
+                    window.location.href = `/export-aprobacion-RH?type=historico&fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&areas=${areas}&estados=${estados}`;
+                });
+            }
+
+            function actualizarEstadisticas(stats) {
+                document.getElementById('totalSolicitudes').textContent = stats.totalSolicitudes;
+                document.getElementById('totalDias').textContent = stats.totalDias;
+                document.getElementById('promedioDias').textContent = stats.promedioDias;
+                document.getElementById('tasaAprobacion').textContent = `${stats.tasaAprobacion}%`;
+            }
+
+            function actualizarGraficos(data) {
+                // Destruir gráficos anteriores si existen
+                if (barChart) barChart.destroy();
+                if (lineChart) lineChart.destroy();
+                if (donutChart) donutChart.destroy();
+
+                // Gráfico de barras
+                barChart = new Chart(document.getElementById('barChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: data.barData.map(d => d.area),
+                        datasets: [
+                            {
+                                label: 'Pendiente',
+                                data: data.barData.map(d => d.pendiente),
+                                backgroundColor: '#17a2b8',
+                            },
+                            {
+                                label: 'Aprobado',
+                                data: data.barData.map(d => d.aprobado),
+                                backgroundColor: '#28a745',
+                            },
+                            {
+                                label: 'Rechazado',
+                                data: data.barData.map(d => d.rechazado),
+                                backgroundColor: '#dc3545',
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Solicitudes por Estado y Área' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Cantidad' } }
+                        }
+                    }
+                });
+
+                // Gráfico de líneas
+                lineChart = new Chart(document.getElementById('lineChart'), {
+                    type: 'line',
+                    data: {
+                        labels: data.lineData.map(d => d.mes),
+                        datasets: [{
+                            label: 'Solicitudes',
+                            data: data.lineData.map(d => d.cantidad),
+                            borderColor: '#4975a2',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Solicitudes por Mes' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, title: { display: true, text: 'Cantidad' } }
+                        }
+                    }
+                });
+
+                // Gráfico de dona
+                donutChart = new Chart(document.getElementById('donutChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: data.donutData.map(d => d.area),
+                        datasets: [{
+                            label: 'Días',
+                            data: data.donutData.map(d => d.total_dias),
+                            backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            title: { display: true, text: 'Días Solicitados por Área' }
+                        }
+                    }
+                });
+            }
+        </script>
+    </body>
+</html>
