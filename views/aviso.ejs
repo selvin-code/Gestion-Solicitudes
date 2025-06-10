@@ -3,60 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aviso - CONSUCOOP</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Acceso Restringido - Nombre de la App</title>
     <style>
-        :root {
-            --color-institucional: #008cfffb;
-            --color-secundario: #FFB20F;
-            --color-hover: #E55A2B;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #ffe5e5 0%, #ffffff 100%);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .aviso-container {
-            max-width: 500px;
+
+        .container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
+            padding: 40px 50px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
             text-align: center;
-            transition: transform 0.3s ease;
+            max-width: 600px;
+            transform: translateY(-20px);
+            animation: fadeIn 0.6s ease-out forwards;
         }
-        .aviso-container:hover {
-            transform: translateY(-5px);
+
+        .error-icon {
+            width: 120px;
+            height: 120px;
+            background: #ff4444;
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
         }
-        .aviso-icon {
-            font-size: 3rem;
-            color: var(--color-institucional);
-            margin-bottom: 1rem;
+
+        .error-icon:before {
+            content: '';
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            background: #ff444422;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
-        .btn-institucional {
-            background: var(--color-institucional);
+
+        .error-icon img {
+            width: 60%;
+            filter: brightness(0) invert(1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.2em;
+        }
+
+        p {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .action-button {
+            background: #ff4444;
+            color: white;
             border: none;
-            font-weight: 500;
+            padding: 12px 35px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
             transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
         }
-        .btn-institucional:hover {
-            background: var(--color-hover);
+
+        .action-button:hover {
+            background: #cc0000;
             transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255,68,68,0.3);
+        }
+
+        .additional-options {
+            margin-top: 25px;
+            font-size: 0.9em;
+            color: #95a5a6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.8); opacity: 0.6; }
+            50% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(0.8); opacity: 0.6; }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px;
+                width: 90%;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="aviso-container">
-        <i class="bi bi-exclamation-triangle-fill aviso-icon"></i>
-        <h1 class="h4 mb-3">Acceso Denegado</h1>
-        <p class="text-muted mb-4"><%= mensaje %></p>
-        <a href="/set-cookie" class="btn btn-institucional">Volver a Iniciar Sesión</a>
+    <div class="container">
+        <div class="error-icon">
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjZmZmZmZmIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptMSAxNWgtMnYyaDJ2LTJ6bTAtOGgtMlYxMGgydjR6Ii8+PC9zdmc+" alt="Error Icon">
+        </div>
+        <h1>Acceso Restringido</h1>
+        <p>Su sesión ha expirado o no ha iniciado sesión. Por favor, <a href="http://portalunico.consucoop.local/">inicie sesión nuevamente</a> para continuar.</p>
+        <a href="http://portalunico.consucoop.local/" class="action-button">Volver al Inicio</a>
+        <div class="additional-options">
+   
+        </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

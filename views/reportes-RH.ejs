@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes RRHH - CONSUCOOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.37.0/dist/apexcharts.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .apexcharts-container {
+            width: 100%;
+            height: 400px;
+        }
+        .apexcharts-canvas {
+            margin: 0 auto;
+        }
+        .select2-container .select2-selection--multiple {
+            min-height: 38px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #3085d6;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            margin: 2px;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-institucional shadow-sm">
+            <div class="container">
+                <div class="d-flex align-items-center">
+                    <img src="/images/logo-consucoop.png" alt="CONSUCOOP Logo" class="logo-header">
+                    <a class="navbar-brand" href="/" aria-label="Sistema de Gestión de Solicitudes">
+                        <div class="navbar-brand-text">
+                            <span>Sistema de Gestión de Solicitudes</span>
+                        </div>
+                    </a>
+                </div>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/aprobacion" data-bs-toggle="tooltip" title="Aprobación de solicitudes por jefe"><i class="bi bi-person-gear me-1"></i>Aprobación Jefe</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/reportes-RH" data-bs-toggle="tooltip" title="Ver reportes de solicitudes"><i class="bi bi-bar-chart me-1"></i>Reportes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/" data-bs-toggle="tooltip" title="Volver al inicio"><i class="bi bi-house-door me-1"></i>Inicio</a>
+                        </li>
+                        <li class="nav-item d-flex align-items-center ms-2">
+                            <div class="user-avatar">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            <span class="text-white d-none d-md-inline" aria-label="Usuario actual"><%= usuario %></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container my-4">
+        <section class="page-header" aria-labelledby="page-title">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1 id="page-title" class="h3 mb-1 animate__animated animate__fadeIn">
+                        <i class="bi bi-bar-chart me-2"></i>Reportes RRHH
+                    </h1>
+                    <p class="mb-0 text-muted">Visualización de estadísticas y gráficos de solicitudes</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-filter me-2"></i>Filtros de Reporte</h5>
+            </div>
+            <div class="card-body">
+                <form id="reporteForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="fechaInicio" class="form-label fw-medium">Fecha Inicio</label>
+                        <input type="date" class="form-control" id="fechaInicio">
+                        <small class="text-muted">Fecha de inicio del período</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="fechaFin" class="form-label fw-medium">Fecha Fin</label>
+                        <input type="date" class="form-control" id="fechaFin">
+                        <small class="text-muted">Fecha de fin del período</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="areas" class="form-label fw-medium">Áreas</label>
+                        <select class="form-select" id="areas" multiple>
+                            <% availableAreas.forEach(area => { %>
+                                <option value="<%= area %>"><%= area %></option>
+                            <% }); %>
+                        </select>
+                        <small class="text-muted">Seleccione una o más áreas</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="empleados" class="form-label fw-medium">Solicitante</label>
+                        <select class="form-select" id="empleados" multiple>
+                            <!-- Opciones cargadas dinámicamente por Select2 -->
+                        </select>
+                        <small class="text-muted">Busque y seleccione uno o más solicitantes</small>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="estados" class="form-label fw-medium">Estados</label>
+                        <select class="form-select" id="estados" multiple>
+                            <option value="Aprobado por Jefe">Aprobado por Jefe</option>
+                            <option value="Aprobado">Aprobado</option>
+                            <option value="Rechazado">Rechazado</option>
+                        </select>
+                        <small class="text-muted">Seleccione uno o más estados</small>
+                    </div>
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-institucional" data-bs-toggle="tooltip" title="Generar reporte con los filtros seleccionados">
+                            <i class="bi bi-search me-1"></i>Generar Reporte
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <div class="quick-stats mb-4">
+            <div class="stat-card animate__animated animate__fadeInUp">
+                <i class="bi bi-file-earmark-text"></i>
+                <h3 id="totalSolicitudes">0</h3>
+                <p>Total Solicitudes</p>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp animate__delay-1s">
+                <i class="bi bi-calendar-day"></i>
+                <h3 id="totalDias">0</h3>
+                <p>Total Días</p>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp animate__delay-2s">
+                <i class="bi bi-clock"></i>
+                <h3 id="promedioDias">0</h3>
+                <p>Promedio Días</p>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp animate__delay-3s">
+                <i class="bi bi-check-circle"></i>
+                <h3 id="tasaAprobacion">0%</h3>
+                <p>Tasa Aprobación</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Solicitudes por Estado y Área</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="barChart" class="apexcharts-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Solicitudes por Mes</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="lineChart" class="apexcharts-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Solicitudes por Solicitante</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="employeeBarChart" class="apexcharts-container"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Días Solicitados por Área</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="donutChart" class="apexcharts-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const availableAreas = <%- JSON.stringify(availableAreas || []) %>;
+
+        console.log('Áreas disponibles:', availableAreas);
+
+        let barChart, lineChart, donutChart, employeeBarChart;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTooltips();
+            configurarSelect2();
+            configurarReportes();
+        });
+
+        function initializeTooltips() {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+        }
+
+        function configurarSelect2() {
+            $('#empleados').select2({
+                placeholder: 'Buscar solicitantes...',
+                allowClear: true,
+                multiple: true,
+                ajax: {
+                    url: '/empleados/buscar',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            term: params.term || ''
+                        };
+                    },
+                    processResults: function(data) {
+                        return {
+                            results: data.map(solicitante => ({
+                                id: solicitante.nombre,
+                                text: solicitante.nombre
+                            }))
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 2,
+                language: {
+                    inputTooShort: function() {
+                        return 'Ingrese al menos 2 caracteres para buscar';
+                    },
+                    noResults: function() {
+                        return 'No se encontraron solicitantes';
+                    },
+                    searching: function() {
+                        return 'Buscando...';
+                    }
+                }
+            });
+        }
+
+        function configurarReportes() {
+            const reporteForm = document.getElementById('reporteForm');
+            reporteForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const fechaInicio = document.getElementById('fechaInicio').value;
+                const fechaFin = document.getElementById('fechaFin').value;
+                const areas = Array.from(document.getElementById('areas').selectedOptions).map(opt => opt.value).join(',');
+                const empleados = $('#empleados').val().join(',');
+                const estados = Array.from(document.getElementById('estados').selectedOptions).map(opt => opt.value).join(',');
+
+                try {
+                    const response = await fetch(`/reporte-RH?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&areas=${areas}&empleados=${empleados}&estados=${estados}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        actualizarEstadisticas(data.stats);
+                        actualizarGraficos(data);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: data.error,
+                            confirmButtonColor: '#3085d6'
+                        });
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'No se pudo generar el reporte: ' + error.message,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            });
+        }
+
+        function actualizarEstadisticas(stats) {
+            document.getElementById('totalSolicitudes').textContent = stats.totalSolicitudes || 0;
+            document.getElementById('totalDias').textContent = stats.totalDias || 0;
+            document.getElementById('promedioDias').textContent = stats.promedioDias || 0;
+            document.getElementById('tasaAprobacion').textContent = `${stats.tasaAprobacion || 0}%`;
+        }
+
+        function actualizarGraficos(data) {
+            // Bar Chart
+            const barOptions = {
+                series: [
+                    {
+                        name: 'Pendiente',
+                        data: data.barData.map(d => d.pendiente || 0)
+                    },
+                    {
+                        name: 'Aprobado',
+                        data: data.barData.map(d => d.aprobado || 0)
+                    },
+                    {
+                        name: 'Rechazado',
+                        data: data.barData.map(d => d.rechazado || 0)
+                    }
+                ],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    stacked: false,
+                    toolbar: { show: true },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: data.barData.map(d => d.area),
+                    title: {
+                        text: 'Área',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Cantidad',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } },
+                    min: 0
+                },
+                fill: { opacity: 1 },
+                colors: ['#17a2b8', '#28a745', '#dc3545'],
+                tooltip: {
+                    theme: 'dark',
+                    style: { fontFamily: 'Inter' }
+                },
+                legend: {
+                    position: 'top',
+                    fontFamily: 'Inter',
+                    fontSize: '12px',
+                    labels: { colors: '#333' }
+                },
+                title: {
+                    text: 'Solicitudes por Estado y Área',
+                    align: 'left',
+                    style: { fontFamily: 'Inter', fontSize: '16px', fontWeight: 600, color: '#333' }
+                }
+            };
+
+            if (barChart) barChart.destroy();
+            barChart = new ApexCharts(document.querySelector("#barChart"), barOptions);
+            barChart.render();
+
+            // Line Chart
+            const lineOptions = {
+                series: [{
+                    name: 'Solicitudes',
+                    data: data.lineData.map(d => d.cantidad || 0)
+                }],
+                chart: {
+                    type: 'line',
+                    height: 350,
+                    toolbar: { show: true },
+                    fontFamily: 'Inter, sans-serif',
+                    zoom: { enabled: true }
+                },
+                dataLabels: { enabled: false },
+                stroke: { curve: 'smooth', width: 3 },
+                xaxis: {
+                    categories: data.lineData.map(d => d.mes),
+                    title: {
+                        text: 'Mes',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Cantidad',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } },
+                    min: 0
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.3,
+                        stops: [0, 90, 100]
+                    }
+                },
+                colors: ['#3085d6'],
+                tooltip: {
+                    theme: 'dark',
+                    style: { fontFamily: 'Inter' }
+                },
+                legend: {
+                    position: 'top',
+                    fontFamily: 'Inter',
+                    fontSize: '12px',
+                    labels: { colors: '#333' }
+                },
+                title: {
+                    text: 'Solicitudes por Mes',
+                    align: 'left',
+                    style: { fontFamily: 'Inter', fontSize: '16px', fontWeight: 600, color: '#333' }
+                }
+            };
+
+            if (lineChart) lineChart.destroy();
+            lineChart = new ApexCharts(document.querySelector("#lineChart"), lineOptions);
+            lineChart.render();
+
+            // Employee Bar Chart
+            const employeeBarOptions = {
+                series: [
+                    {
+                        name: 'Solicitudes',
+                        data: data.employeeData ? data.employeeData.map(d => d.cantidad || 0) : []
+                    }
+                ],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    toolbar: { show: true },
+                    fontFamily: 'Inter, sans-serif'
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '55%',
+                        endingShape: 'rounded'
+                    }
+                },
+                dataLabels: { enabled: false },
+                stroke: {
+                    show: true,
+                    width: 2,
+                    colors: ['transparent']
+                },
+                xaxis: {
+                    categories: data.employeeData ? data.employeeData.map(d => d.nombre) : [],
+                    title: {
+                        text: 'Solicitante',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Cantidad',
+                        style: { fontFamily: 'Inter', fontSize: '12px', color: '#333' }
+                    },
+                    labels: { style: { fontFamily: 'Inter', fontSize: '12px', colors: '#333' } },
+                    min: 0
+                },
+                fill: { opacity: 1 },
+                colors: ['#17a2b8'],
+                tooltip: {
+                    theme: 'dark',
+                    style: { fontFamily: 'Inter' }
+                },
+                legend: {
+                    position: 'top',
+                    fontFamily: 'Inter',
+                    fontSize: '12px',
+                    labels: { colors: '#333' }
+                },
+                title: {
+                    text: 'Solicitudes por Solicitante',
+                    align: 'left',
+                    style: { fontFamily: 'Inter', fontSize: '16px', fontWeight: 600, color: '#333' }
+                }
+            };
+
+            if (employeeBarChart) employeeBarChart.destroy();
+            employeeBarChart = new ApexCharts(document.querySelector("#employeeBarChart"), employeeBarOptions);
+            employeeBarChart.render();
+
+            // Donut Chart
+            const donutOptions = {
+                series: data.donutData.map(d => d.total_dias || 0),
+                chart: {
+                    type: 'donut',
+                    height: 350,
+                    fontFamily: 'Inter, sans-serif'
+                },
+                labels: data.donutData.map(d => d.area),
+                dataLabels: {
+                    enabled: true,
+                    style: { fontFamily: 'Inter', fontSize: '12px' }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '50%'
+                        }
+                    }
+                },
+                colors: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],
+                tooltip: {
+                    theme: 'dark',
+                    style: { fontFamily: 'Inter' }
+                },
+                legend: {
+                    position: 'top',
+                    fontFamily: 'Inter',
+                    fontSize: '12px',
+                    labels: { colors: '#333' }
+                },
+                title: {
+                    text: 'Días Solicitados por Área',
+                    align: 'left',
+                    style: { fontFamily: 'Inter', fontSize: '16px', fontWeight: 600, color: '#333' }
+                }
+            };
+
+            if (donutChart) donutChart.destroy();
+            donutChart = new ApexCharts(document.querySelector("#donutChart"), donutOptions);
+            donutChart.render();
+        }
+    </script>
+</body>
+</html>

@@ -25,7 +25,11 @@ const verificarCookie = (req, res, next) => {
 
 const protegerRuta = (req, res, next) => {
   if (!req.usuario) {
-    return res.status(401).json({ error: 'No autenticado. Por favor, inicie sesión.' });
+    // Renderiza la vista aviso.ejs en lugar de enviar JSON
+    return res.status(401).render('aviso', {
+      titulo: 'Acceso no autorizado',
+      mensaje: 'No autenticado. Por favor, inicie sesión.'
+    });
   }
   next();
 };

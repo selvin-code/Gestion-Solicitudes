@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONSUCOOP - Mantenimiento de Jefes</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-institucional shadow-sm">
+      <div class="container">
+        <div class="d-flex align-items-center">
+          <img src="/images/logo-consucoop.png" alt="CONSUCOOP Logo" class="logo-header">
+          <a class="navbar-brand" href="/" aria-label="Sistema de Gestión de Solicitudes">
+            <div class="navbar-brand-text">
+              <span>Sistema de Gestión de Solicitudes</span>
+            </div>
+          </a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/aprobacion" data-bs-toggle="tooltip" title="Aprobación de solicitudes por jefe"><i class="bi bi-person-gear me-1"></i>Aprobación Jefe</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/aprobacion-RH" data-bs-toggle="tooltip" title="Gestión de solicitudes por RRHH"><i class="bi bi-people-fill me-1"></i>RRHH</a>
+            </li>
+            <li class="nav-item d-flex align-items-center ms-2">
+              <div class="user-avatar">
+                <i class="bi bi-person-fill"></i>
+              </div>
+              <span class="text-white d-none d-md-inline" aria-label="Usuario actual"><%= usuario %></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main class="container my-4">
+    <section class="page-header" aria-labelledby="page-title">
+      <div class="d-flex justify-content-between align-items-center flex-wrap">
+        <div>
+          <h1 id="page-title" class="h3 mb-1 animate__animated animate__fadeIn">
+            <i class="bi bi-person-gear me-2"></i>Mantenimiento de Jefes
+          </h1>
+          <p class="mb-0 text-muted">Administra los jefes registrados en el sistema</p>
+        </div>
+        <div class="header-actions d-flex gap-2 flex-wrap">
+          <button class="btn btn-institucional animate__animated animate__pulse" data-bs-toggle="modal" data-bs-target="#jefeModal" data-bs-toggle="tooltip" title="Agregar un nuevo jefe" aria-label="Nuevo jefe">
+            <i class="bi bi-person-plus me-1"></i>Nuevo Jefe
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card shadow-sm" aria-labelledby="jefes-title">
+      <div class="card-header d-flex justify-content-between align-items-center p-0">
+        <ul class="nav nav-tabs" id="jefesTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="activos-tab" data-bs-toggle="tab" data-bs-target="#activos" type="button" role="tab" aria-controls="activos" aria-selected="true">
+              <i class="bi bi-person-check me-1"></i>Activos
+              <span class="badge bg-primary rounded-pill ms-1"><%= jefes.filter(j => j.activo).length %></span>
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="inactivos-tab" data-bs-toggle="tab" data-bs-target="#inactivos" type="button" role="tab" aria-controls="inactivos" aria-selected="false">
+              <i class="bi bi-person-x me-1"></i>Inactivos
+              <span class="badge bg-secondary rounded-pill ms-1"><%= jefes.filter(j => !j.activo).length %></span>
+            </button>
+          </li>
+        </ul>
+        <div class="d-flex align-items-center pe-3">
+          <!--<div class="tab-export-btn active" id="activos-export">
+            <a href="/export-jefes?estado=activo" class="btn btn-sm btn-outline-institucional" data-bs-toggle="tooltip" title="Descargar lista de jefes activos" aria-label="Exportar jefes activos">
+               <i class="bi bi-download me-1"></i>Exportar-->
+            </a>
+          </div>
+          <div class="tab-export-btn" id="inactivos-export">
+            <div class="d-flex gap-2">
+              <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" class="form-control form-control-sm" id="searchJefes" placeholder="Buscar en jefes..." aria-label="Buscar en jefes">
+              </div>
+            <!--  <div class="dropdown">
+                <button class="btn btn-sm btn-outline-institucional dropdown-toggle" type="button" id="filtroUnidad" data-bs-toggle="dropdown" data-bs-toggle="tooltip" title="Filtrar jefes por unidad" aria-expanded="false">
+                  <i class="bi bi-funnel me-1"></i>Unidad
+                </button>-->
+                <ul class="dropdown-menu" aria-labelledby="filtroUnidad">
+                  <li><a class="dropdown-item" href="#" data-filter="all">Todas</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <% areas.forEach(area => { %>
+                    <li><a class="dropdown-item" href="#" data-filter="<%= area.nombre_area %>"><%= area.nombre_area %></a></li>
+                  <% }) %>
+                </ul>
+              </div>
+             <!-- <div class="dropdown">
+                <button class="btn btn-sm btn-outline-institucional dropdown-toggle" type="button" id="filtroTipo" data-bs-toggle="dropdown" data-bs-toggle="tooltip" title="Filtrar jefes por tipo" aria-expanded="false">
+                  <i class="bi bi-funnel me-1"></i>Tipo
+                </button>-->
+                <ul class="dropdown-menu" aria-labelledby="filtroTipo">
+                  <li><a class="dropdown-item" href="#" data-filter="all">Todos</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item" href="#" data-filter="Titular">Titular</a></li>
+                  <li><a class="dropdown-item" href="#" data-filter="Suplente">Suplente</a></li>
+                </ul>
+              </div>
+              <a href="/export-jefes?estado=inactivo" class="btn btn-sm btn-outline-institucional" id="export-inactivos" data-bs-toggle="tooltip" title="Descargar lista de jefes inactivos" aria-label="Exportar jefes inactivos">
+                <i class="bi bi-download me-1"></i>Exportar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body tab-content" id="jefesTabContent">
+        <div class="tab-pane fade show active" id="activos" role="tabpanel" aria-labelledby="activos-tab">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" aria-label="Tabla de jefes activos">
+              <thead>
+                <tr>
+                  <th scope="col">ID Empleado</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Unidad</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (jefes && jefes.filter(j => j.activo).length > 0) { %>
+                  <% jefes.filter(j => j.activo).sort((a, b) => a.nombre_jefe.localeCompare(b.nombre_jefe)).forEach(jefe => { %>
+                    <tr class="animate__animated animate__fadeIn" data-unidad="<%= jefe.unidad %>" data-tipo="<%= jefe.tipo_jefe %>" data-search="<%= jefe.nombre_jefe.toLowerCase() %> <%= jefe.unidad.toLowerCase() %> <%= jefe.tipo_jefe.toLowerCase() %>">
+                      <td><%= jefe.id_empleado %></td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="user-avatar small">
+                            <i class="bi bi-person-fill"></i>
+                          </div>
+                          <span class="fw-medium"><%= jefe.nombre_jefe %></span>
+                        </div>
+                      </td>
+                      <td><span class="badge bg-secondary bg-opacity-10 text-secondary"><%= jefe.unidad %></span></td>
+                      <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= jefe.tipo_jefe %></span></td>
+                      <td class="text-end">
+                        <div class="action-buttons">
+                          <button class="btn btn-sm btn-outline-primary edit-btn" data-id="<%= jefe.id %>" data-bs-toggle="modal" data-bs-target="#jefeModal" data-bs-toggle="tooltip" title="Editar este jefe" aria-label="Editar jefe">
+                            <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-danger desactivar-btn" data-id="<%= jefe.id %>" data-bs-toggle="tooltip" title="Desactivar este jefe" aria-label="Desactivar jefe">
+                            <i class="bi bi-person-x-fill" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center empty-message">
+                      <i class="bi bi-inbox fs-1 text-muted" aria-hidden="true"></i>
+                      <p class="mt-2 text-muted">No hay jefes activos en este momento</p>
+                      <button class="btn btn-institucional mt-2" data-bs-toggle="modal" data-bs-target="#jefeModal">
+                        <i class="bi bi-person-plus me-1"></i>Agregar nuevo jefe
+                      </button>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="inactivos" role="tabpanel" aria-labelledby="inactivos-tab">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="inactivos-table" aria-label="Tabla de jefes inactivos">
+              <thead>
+                <tr>
+                  <th scope="col">ID Empleado</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Unidad</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col" class="text-end">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (jefes && jefes.filter(j => !j.activo).length > 0) { %>
+                  <% jefes.filter(j => !j.activo).sort((a, b) => a.nombre_jefe.localeCompare(b.nombre_jefe)).forEach(jefe => { %>
+                    <tr data-unidad="<%= jefe.unidad %>" data-tipo="<%= jefe.tipo_jefe %>" data-search="<%= jefe.nombre_jefe.toLowerCase() %> <%= jefe.unidad.toLowerCase() %> <%= jefe.tipo_jefe.toLowerCase() %>">
+                      <td><%= jefe.id_empleado %></td>
+                      <td>
+                        <div class="d-flex align-items-center">
+                          <div class="user-avatar small">
+                            <i class="bi bi-person-fill"></i>
+                          </div>
+                          <span class="fw-medium"><%= jefe.nombre_jefe %></span>
+                        </div>
+                      </td>
+                      <td><span class="badge bg-secondary bg-opacity-10 text-secondary"><%= jefe.unidad %></span></td>
+                      <td><span class="badge bg-primary bg-opacity-10 text-primary"><%= jefe.tipo_jefe %></span></td>
+                      <td class="text-end">
+                        <div class="action-buttons">
+                          <button class="btn btn-sm btn-outline-primary edit-btn" data-id="<%= jefe.id %>" data-bs-toggle="modal" data-bs-target="#jefeModal" data-bs-toggle="tooltip" title="Editar este jefe" aria-label="Editar jefe">
+                            <i class="bi bi-pencil-fill" aria-hidden="true"></i>
+                          </button>
+                          <button class="btn btn-sm btn-outline-success activar-btn" data-id="<%= jefe.id %>" data-bs-toggle="tooltip" title="Activar este jefe" aria-label="Activar jefe">
+                            <i class="bi bi-person-check-fill" aria-hidden="true"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }); %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center empty-message">
+                      <i class="bi bi-archive fs-1 text-muted" aria-hidden="true"></i>
+                      <p class="mt-2 text-muted">No hay jefes inactivos registrados</p>
+                      <button class="btn btn-institucional mt-2" data-bs-toggle="modal" data-bs-target="#jefeModal">
+                        <i class="bi bi-person-plus me-1"></i>Agregar nuevo jefe
+                      </button>
+                    </td>
+                  </tr>
+                <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal para agregar/editar jefe -->
+    <div class="modal fade" id="jefeModal" tabindex="-1" aria-labelledby="jefeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="jefeModalLabel"><i class="bi bi-person-plus me-2"></i>Nuevo Jefe</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+         <div class="modal-body">
+  <form id="jefeForm" aria-describedby="formInstructions">
+    <div class="alert alert-info">
+      <i class="bi bi-info-circle me-2"></i>Complete los campos para registrar un jefe. Los campos con <span class="text-danger">*</span> son obligatorios.
+    </div>
+    <input type="hidden" id="jefeId">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="id_empleado" class="form-label fw-medium">ID Empleado <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="id_empleado" required>
+          <small class="text-muted">Identificador único del empleado</small>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="nombre_jefe" class="form-label fw-medium">Nombre <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="nombre_jefe" readonly required>
+          <small class="text-muted">Nombre completo del jefe</small>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="unidad" class="form-label fw-medium">Unidad <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                      <select class="form-select" id="unidad" required>
+                        <option value="">Seleccione una unidad</option>
+                        <% areas.forEach(area => { %>
+                          <option value="<%= area.nombre_area %>"><%= area.nombre_area %></option>
+                        <% }) %>
+                      </select>
+                      <button class="btn btn-outline-institucional" type="button" data-bs-toggle="modal" data-bs-target="#areaModal" data-bs-toggle="tooltip" title="Agregar nueva unidad" aria-label="Agregar nueva unidad">
+                        <i class="bi bi-plus-circle"></i>
+                      </button>
+                    </div>
+                    <small class="text-muted">Departamento o área del jefe</small>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="tipo_jefe" class="form-label fw-medium">Tipo de Jefe <span class="text-danger">*</span></label>
+                    <select class="form-select" id="tipo_jefe" required>
+                      <option value="Titular">Titular</option>
+                      <option value="Suplente">Suplente</option>
+                    </select>
+                    <small class="text-muted">Indica si es jefe titular o suplente</small>
+                  </div>
+                </div>
+              </div>
+              <div id="formError" class="alert alert-danger d-none"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" title="Cerrar sin guardar">Cancelar</button>
+            <button type="submit" class="btn btn-institucional" form="jefeForm" data-bs-toggle="tooltip" title="Guardar jefe">
+              <i class="bi bi-save me-1"></i>Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para agregar nueva área -->
+    <div class="modal fade" id="areaModal" tabindex="-1" aria-labelledby="areaModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="areaModalLabel"><i class="bi bi-building me-2"></i>Nueva Unidad</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <form id="areaForm" aria-describedby="areaFormInstructions">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>Ingrese el nombre de la nueva unidad. Este campo es obligatorio.
+              </div>
+              <div class="mb-3">
+                <label for="nombre_area" class="form-label fw-medium">Nombre de la Unidad <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nombre_area" required>
+                <small class="text-muted">Nombre único para la unidad</small>
+              </div>
+              <div id="areaFormError" class="alert alert-danger d-none"></div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-bs-toggle="tooltip" title="Cerrar sin guardar">Cancelar</button>
+            <button type="submit" class="btn btn-institucional" form="areaForm" data-bs-toggle="tooltip" title="Guardar unidad">
+              <i class="bi bi-save me-1"></i>Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="floating-action-btn d-lg-none" data-bs-toggle="modal" data-bs-target="#jefeModal" aria-label="Nuevo jefe">
+      <i class="bi bi-plus"></i>
+    </a>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeTooltips();
+      setupJefeFormSubmission();
+      setupAreaFormSubmission();
+      setupEditButtons();
+      setupToggleButtons();
+      setupFilters();
+      setupSearch();
+      setupTabExport();
+    });
+
+    function initializeTooltips() {
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+      tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+    }
+
+    function setupJefeFormSubmission() {
+      const form = document.getElementById('jefeForm');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formError = document.getElementById('formError');
+          formError.textContent = '';
+          formError.classList.add('d-none');
+
+          const jefeId = document.getElementById('jefeId').value;
+          const id_empleado = document.getElementById('id_empleado').value;
+          const nombre_jefe = document.getElementById('nombre_jefe').value;
+          const unidad = document.getElementById('unidad').value;
+          const tipo_jefe = document.getElementById('tipo_jefe').value;
+
+          if (!id_empleado || !nombre_jefe || !unidad || !tipo_jefe) {
+            formError.textContent = 'Complete todos los campos obligatorios.';
+            formError.classList.remove('d-none');
+            return;
+          }
+
+          const data = { id_empleado, nombre_jefe, unidad, tipo_jefe };
+          const url = jefeId ? '/update-jefe' : '/add-jefe';
+          const method = jefeId ? 'PUT' : 'POST';
+
+          Swal.fire({
+            title: jefeId ? '¿Actualizar jefe?' : '¿Agregar jefe?',
+            text: jefeId ? 'Se actualizarán los datos del jefe.' : 'Se registrará un nuevo jefe.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              try {
+                const response = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: jefeId ? '¡Jefe actualizado!' : '¡Jefe agregado!',
+                    text: result.message,
+                    timer: 3000,
+                    showConfirmButton: false
+                  }).then(() => {
+                    document.getElementById('jefeForm').reset();
+                    document.getElementById('jefeId').value = '';
+                    document.getElementById('jefeModalLabel').textContent = 'Nuevo Jefe';
+                    bootstrap.Modal.getInstance(document.getElementById('jefeModal')).hide();
+                    location.reload();
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error || 'No se pudo procesar la solicitud.'
+                  });
+                }
+              } catch (error) {
+                console.error('Error al procesar jefe:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error de conexión',
+                  text: 'No se pudo conectar con el servidor.'
+                });
+              }
+            }
+          });
+        });
+      }
+    }
+function setupAutoCompleteNombre() {
+  const idEmpleadoInput = document.getElementById('id_empleado');
+  const nombreJefeInput = document.getElementById('nombre_jefe');
+  let debounceTimeout;
+
+  idEmpleadoInput.addEventListener('input', () => {
+    clearTimeout(debounceTimeout);
+    const id_empleado = idEmpleadoInput.value.trim();
+
+    // Validar que el ID tenga exactamente 13 caracteres
+    if (id_empleado.length !== 13) {
+      nombreJefeInput.value = '';
+      return; // No hacer la solicitud si no tiene 13 caracteres
+    }
+
+    debounceTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/get-nombre-empleado/${id_empleado}`, {
+          headers: { 'Accept': 'application/json' },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error HTTP! estado: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          nombreJefeInput.value = result.data.nombre || '';
+        } else {
+          nombreJefeInput.value = '';
+          Swal.fire({
+            icon: 'warning',
+            title: 'Empleado no encontrado',
+            text: result.error || 'No se encontró el empleado con el ID proporcionado',
+            timer: 3000,
+            showConfirmButton: false,
+          });
+        }
+      } catch (error) {
+        console.error('Error al obtener nombre del empleado:', error);
+        nombreJefeInput.value = '';
+        Swal.fire({
+          icon: 'error',
+          title: 'Error de conexión',
+          text: 'No se pudo conectar con el servidor o el servidor retornó un error inesperado.',
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      }
+    }, 500); // Esperar 500ms después de que el usuario deje de escribir
+  });
+}
+// Agregar a la inicialización
+document.addEventListener('DOMContentLoaded', () => {
+  initializeTooltips();
+  setupJefeFormSubmission();
+  setupAreaFormSubmission();
+  setupEditButtons();
+  setupToggleButtons();
+  setupFilters();
+  setupSearch();
+  setupTabExport();
+  setupAutoCompleteNombre(); // Nueva función
+});
+    function setupAreaFormSubmission() {
+      const form = document.getElementById('areaForm');
+      if (form) {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const formError = document.getElementById('areaFormError');
+          formError.textContent = '';
+          formError.classList.add('d-none');
+
+          const nombre_area = document.getElementById('nombre_area').value.trim();
+
+          if (!nombre_area) {
+            formError.textContent = 'El nombre de la unidad es obligatorio.';
+            formError.classList.remove('d-none');
+            return;
+          }
+
+          Swal.fire({
+            title: '¿Agregar nueva unidad?',
+            text: `Se registrará la unidad "${nombre_area}".`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              try {
+                const response = await fetch('/add-area', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ nombre_area })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: '¡Unidad agregada!',
+                    text: result.message,
+                    timer: 3000,
+                    showConfirmButton: false
+                  }).then(() => {
+                    document.getElementById('areaForm').reset();
+                    bootstrap.Modal.getInstance(document.getElementById('areaModal')).hide();
+                    updateUnidadSelect(nombre_area);
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error || 'No se pudo procesar la solicitud.'
+                  });
+                }
+              } catch (error) {
+                console.error('Error al agregar unidad:', error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error de conexión',
+                  text: 'No se pudo conectar con el servidor.'
+                });
+              }
+            }
+          });
+        });
+      }
+    }
+
+    function updateUnidadSelect(newArea) {
+      const select = document.getElementById('unidad');
+      const option = document.createElement('option');
+      option.value = newArea;
+      option.textContent = newArea;
+      select.appendChild(option);
+      select.value = newArea;
+    }
+
+    function setupEditButtons() {
+      document.querySelectorAll('.edit-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const id = button.dataset.id;
+          try {
+            const response = await fetch(`/jefe/${id}`);
+            const result = await response.json();
+
+            if (response.ok) {
+              const jefe = result.data;
+              document.getElementById('jefeId').value = jefe.id;
+              document.getElementById('id_empleado').value = jefe.id_empleado;
+              document.getElementById('nombre_jefe').value = jefe.nombre_jefe;
+              document.getElementById('unidad').value = jefe.unidad;
+              document.getElementById('tipo_jefe').value = jefe.tipo_jefe;
+              document.getElementById('jefeModalLabel').textContent = 'Editar Jefe';
+              bootstrap.Modal.getOrCreateInstance(document.getElementById('jefeModal')).show();
+            } else {
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: result.error || 'No se pudieron cargar los datos del jefe.'
+              });
+            }
+          } catch (error) {
+            console.error('Error al cargar jefe:', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error de conexión',
+              text: 'No se pudo conectar con el servidor.'
+            });
+          }
+        });
+      });
+    }
+
+    function setupToggleButtons() {
+      document.querySelectorAll('.activar-btn, .desactivar-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          const id = button.dataset.id;
+          const accion = button.classList.contains('activar-btn') ? 'activar' : 'desactivar';
+
+          Swal.fire({
+            title: `¿${accion.charAt(0).toUpperCase() + accion.slice(1)} jefe?`,
+            text: `El jefe será ${accion === 'activar' ? 'activado' : 'desactivado'}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: `Sí, ${accion}`,
+            cancelButtonText: 'Cancelar'
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              try {
+                const response = await fetch('/toggle-jefe-status', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                  Swal.fire({
+                    icon: 'success',
+                    title: `Jefe ${accion === 'activar' ? 'activado' : 'desactivado'}`,
+                    text: result.message,
+                    timer: 3000,
+                    showConfirmButton: false
+                  }).then(() => location.reload());
+                } else {
+                  Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: result.error || 'No se pudo procesar la solicitud.'
+                  });
+                }
+              } catch (error) {
+                console.error(`Error al ${accion} jefe:`, error);
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error de conexión',
+                  text: 'No se pudo conectar con el servidor.'
+                });
+              }
+            }
+          });
+        });
+      });
+    }
+
+    function setupFilters() {
+      document.querySelectorAll('#filtroUnidad .dropdown-item, #filtroTipo .dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const filter = item.dataset.filter;
+          const isUnidad = item.closest('.dropdown').querySelector('#filtroUnidad') !== null;
+          const rows = document.querySelectorAll('#inactivos-table tbody tr');
+          const exportLink = document.getElementById('export-inactivos');
+
+          rows.forEach(row => {
+            const value = isUnidad ? row.dataset.unidad : row.dataset.tipo;
+            row.style.display = filter === 'all' || value === filter ? '' : 'none';
+          });
+
+          const unidadFilter = document.querySelector('#filtroUnidad .dropdown-item.active')?.dataset.filter || 'all';
+          const tipoFilter = document.querySelector('#filtroTipo .dropdown-item.active')?.dataset.filter || 'all';
+          exportLink.href = `/export-jefes?estado=inactivo${unidadFilter !== 'all' ? '&unidad=' + unidadFilter : ''}${tipoFilter !== 'all' ? '&tipo=' + tipoFilter : ''}`;
+        });
+      });
+    }
+
+    function setupSearch() {
+      let searchTimeout;
+      document.getElementById('searchJefes').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+          const searchTerm = this.value.toLowerCase();
+          const rows = document.querySelectorAll('#inactivos-table tbody tr');
+          rows.forEach(row => {
+            const searchText = row.dataset.search;
+            row.style.display = searchText.includes(searchTerm) ? '' : 'none';
+          });
+        }, 300);
+      });
+    }
+
+    function setupTabExport() {
+      document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', event => {
+          const target = event.target.getAttribute('data-bs-target');
+          document.querySelectorAll('.tab-export-btn').forEach(btn => {
+            btn.classList.remove('active');
+          });
+
+          if (target === '#activos') {
+            document.getElementById('activos-export').classList.add('active');
+          } else if (target === '#inactivos') {
+            document.getElementById('inactivos-export').classList.add('active');
+          }
+        });
+      });
+    }
+    
+  </script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
